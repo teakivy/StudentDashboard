@@ -5,7 +5,6 @@ import {
 	ExternalLink,
 	Home,
 	LogOut,
-	Settings,
 } from 'lucide-react';
 import {
 	Sidebar,
