@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Unauthorized from './pages/Unauthorized';
 import ProtectedRoute from './components/protected-route';
+import { Toaster } from 'sonner';
 
 function App() {
 	return (
@@ -22,6 +23,7 @@ function App() {
 					<Route path='/unauthorized' element={<Unauthorized />} />
 				</Routes>
 			</Router>
+			<Toaster />
 		</ThemeProvider>
 	);
 }

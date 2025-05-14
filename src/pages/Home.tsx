@@ -4,6 +4,7 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import Unauthorized from './Unauthorized';
 import { useState } from 'react';
 import DashboardOverview from './Home/Tabs/Overview/DashboardOverview';
+import DashboardSemesters from './Home/Tabs/Semesters/DashboardSemesters';
 
 function Home() {
 	const [activeView, setActiveView] = useState('overview');
@@ -18,6 +19,7 @@ function Home() {
 					<Header />
 					<main className='flex-1 p-4 md:p-6'>
 						{activeView === 'overview' && <DashboardOverview />}
+						{activeView === 'semesters' && <DashboardSemesters />}
 						{activeView === 'courses' && <Unauthorized />}
 						{activeView === 'schedule' && <Unauthorized />}
 						{activeView === 'assignments' && <Unauthorized />}

@@ -5,6 +5,7 @@ import {
 	ExternalLink,
 	Home,
 	LogOut,
+	University,
 } from 'lucide-react';
 import {
 	Sidebar,
@@ -38,6 +39,7 @@ export function DashboardSidebar({
 	};
 	const menuItems = [
 		{ id: 'overview', label: 'Overview', icon: Home },
+		{ id: 'semesters', label: 'Semesters', icon: University },
 		{ id: 'courses', label: 'Courses', icon: BookOpen },
 		{ id: 'schedule', label: 'Schedule', icon: Calendar },
 		{ id: 'assignments', label: 'Assignments', icon: CheckSquare },
