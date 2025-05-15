@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { useSearchParams } from 'react-router-dom';
 import {
 	Card,
 	CardDescription,
@@ -148,7 +148,22 @@ const RESOURCE_DATA: Record<Category, ResourceCardProps[]> = {
 };
 
 function DashboardResources() {
-	const [selected, setSelected] = useState<Category | null>(null);
+	const [searchParams, setSearchParams] = useSearchParams();
+	const selectedParam = searchParams.get('category');
+
+	const isValidCategory = CATEGORIES.includes(selectedParam as Category);
+	const selected = isValidCategory ? (selectedParam as Category) : null;
+
+	const handleSelect = (cat: Category) => {
+		setSearchParams((prev) => {
+			if (selected === cat) {
+				prev.delete('category'); // Unselect
+			} else {
+				prev.set('category', cat);
+			}
+			return prev;
+		});
+	};
 
 	return (
 		<div className='space-y-6'>
@@ -158,7 +173,7 @@ function DashboardResources() {
 						<Badge
 							key={cat}
 							variant={selected === cat ? 'default' : 'secondary'}
-							onClick={() => setSelected((prev) => (prev === cat ? null : cat))}
+							onClick={() => handleSelect(cat)}
 							className='cursor-pointer px-3 py-1'
 						>
 							{cat}

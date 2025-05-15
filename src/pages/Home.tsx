@@ -1,14 +1,24 @@
 import Header from './Home/Header';
 import { DashboardSidebar } from './Home/DashboardSidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import DashboardOverview from './Home/Tabs/Overview/DashboardOverview';
 import DashboardSemesters from './Home/Tabs/Semesters/DashboardSemesters';
 import DashboardResources from './Home/Tabs/Resources/DashboardResources';
 import UnderConstruction from './Home/Tabs/UnderConstruction/DashboardUnderConstruction';
 
 function Home() {
-	const [activeView, setActiveView] = useState('overview');
+	const [searchParams, setSearchParams] = useSearchParams();
+	const viewFromURL = searchParams.get('view') || 'overview';
+	const [activeView, setActiveView] = useState(viewFromURL);
+
+	useEffect(() => {
+		if (searchParams.get('view') !== activeView) {
+			setSearchParams({ view: activeView });
+		}
+	}, [activeView, searchParams, setSearchParams]);
+
 	return (
 		<SidebarProvider>
 			<div className='flex min-h-screen   w-full'>
