@@ -6,6 +6,7 @@ import { useState } from 'react';
 import DashboardOverview from './Home/Tabs/Overview/DashboardOverview';
 import DashboardSemesters from './Home/Tabs/Semesters/DashboardSemesters';
 import DashboardResources from './Home/Tabs/Resources/DashboardResources';
+import UnderConstruction from './Home/Tabs/UnderConstruction/DashboardUnderConstruction';
 
 function Home() {
 	const [activeView, setActiveView] = useState('overview');
@@ -21,9 +22,9 @@ function Home() {
 					<main className='flex-1 p-4 md:p-6'>
 						{activeView === 'overview' && <DashboardOverview />}
 						{activeView === 'semesters' && <DashboardSemesters />}
-						{activeView === 'courses' && <Unauthorized />}
-						{activeView === 'schedule' && <Unauthorized />}
-						{activeView === 'assignments' && <Unauthorized />}
+						{activeView === 'courses' && <UnderConstruction />}
+						{activeView === 'schedule' && <UnderConstruction />}
+						{activeView === 'assignments' && <UnderConstruction />}
 						{activeView === 'resources' && <DashboardResources />}
 					</main>
 				</div>
