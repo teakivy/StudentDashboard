@@ -5,6 +5,7 @@ import Unauthorized from './Unauthorized';
 import { useState } from 'react';
 import DashboardOverview from './Home/Tabs/Overview/DashboardOverview';
 import DashboardSemesters from './Home/Tabs/Semesters/DashboardSemesters';
+import DashboardResources from './Home/Tabs/Resources/DashboardResources';
 
 function Home() {
 	const [activeView, setActiveView] = useState('overview');
@@ -23,7 +24,7 @@ function Home() {
 						{activeView === 'courses' && <Unauthorized />}
 						{activeView === 'schedule' && <Unauthorized />}
 						{activeView === 'assignments' && <Unauthorized />}
-						{activeView === 'resources' && <Unauthorized />}
+						{activeView === 'resources' && <DashboardResources />}
 					</main>
 				</div>
 			</div>
