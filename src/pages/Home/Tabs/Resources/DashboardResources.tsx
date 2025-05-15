@@ -7,6 +7,7 @@ import {
 	CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
 	Apple,
 	BookOpen,
@@ -29,6 +30,7 @@ import {
 import React from 'react';
 
 function DashboardResources() {
+	const isMobile = useIsMobile();
 	return (
 		<div className='space-y-6'>
 			<div>
@@ -47,7 +49,7 @@ function DashboardResources() {
 						Campus
 					</TabsTrigger>
 					<TabsTrigger value='services' className='cursor-pointer'>
-						Student Services
+						{isMobile ? 'Services' : 'Student Services'}
 					</TabsTrigger>
 					<TabsTrigger value='tech' className='cursor-pointer'>
 						Technology
