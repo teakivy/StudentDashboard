@@ -152,23 +152,19 @@ function DashboardResources() {
 
 	return (
 		<div className='space-y-6'>
-			<div>
-				<h2 className='text-3xl font-bold tracking-tight'>Resources</h2>
-				<p className='text-muted-foreground'>
-					Quick access to important UGA resources
-				</p>
-			</div>
-			<div className='flex flex-col gap-4 sm:flex-row sm:justify-begin sm:gap-2 text-center'>
-				{CATEGORIES.map((cat) => (
-					<Badge
-						key={cat}
-						variant={selected === cat ? 'default' : 'secondary'}
-						onClick={() => setSelected((prev) => (prev === cat ? null : cat))}
-						className='cursor-pointer px-3 py-1'
-					>
-						{cat}
-					</Badge>
-				))}
+			<div className='w-full overflow-hidden'>
+				<div className='mx-auto max-w-fit flex flex-wrap justify-center gap-1 sm:justify-start sm:mx-0 sm:gap-2'>
+					{CATEGORIES.map((cat) => (
+						<Badge
+							key={cat}
+							variant={selected === cat ? 'default' : 'secondary'}
+							onClick={() => setSelected((prev) => (prev === cat ? null : cat))}
+							className='cursor-pointer px-3 py-1'
+						>
+							{cat}
+						</Badge>
+					))}
+				</div>
 			</div>
 
 			<AnimatePresence mode='wait'>
