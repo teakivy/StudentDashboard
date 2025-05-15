@@ -1,7 +1,6 @@
 import Header from './Home/Header';
 import { DashboardSidebar } from './Home/DashboardSidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import Unauthorized from './Unauthorized';
 import { useState } from 'react';
 import DashboardOverview from './Home/Tabs/Overview/DashboardOverview';
 import DashboardSemesters from './Home/Tabs/Semesters/DashboardSemesters';
