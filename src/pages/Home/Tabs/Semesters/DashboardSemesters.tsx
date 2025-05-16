@@ -33,6 +33,7 @@ import {
 	calculateSemesterCredits,
 	calculateSemesterGPA,
 	cn,
+	formatGPA,
 } from '@/lib/utils';
 import { format } from 'date-fns';
 import {
@@ -91,17 +92,22 @@ function DashboardSemesters() {
 	useEffect(() => {
 		const fetchSemesters = async () => {
 			let semesters = await getDB().getAllSemesters();
+			let courses = await getDB().getAllCourses();
 			setSemesters(semesters);
 			const gpas = new Map<SnowflakeId, number>();
 			for (const semester of semesters) {
-				const gpa = await calculateSemesterGPA(semester.id);
+				const gpa = await calculateSemesterGPA(semester.id, semesters, courses);
 				gpas.set(semester.id, gpa);
 			}
 			setGpas(gpas);
 
 			const credits = new Map<SnowflakeId, number>();
 			for (const semester of semesters) {
-				const credit = await calculateSemesterCredits(semester.id);
+				const credit = await calculateSemesterCredits(
+					semester.id,
+					semesters,
+					courses
+				);
 				credits.set(semester.id, credit);
 			}
 			setCredits(credits);
@@ -477,9 +483,7 @@ function DashboardSemesters() {
 											<div>
 												<div className='text-muted-foreground'>GPA</div>
 												<div className='font-medium'>
-													{gpas.get(currentSemester.id) == -1
-														? '—'
-														: gpas.get(currentSemester.id)}
+													{formatGPA(gpas.get(currentSemester.id))}
 												</div>
 											</div>
 										</div>
@@ -859,9 +863,7 @@ function SemesterCard({
 								</div>
 								<div>
 									<div className='text-muted-foreground'>GPA</div>
-									<div className='font-medium'>
-										{gpa == -1 || gpa === undefined ? '—' : gpa}
-									</div>
+									<div className='font-medium'>{formatGPA(gpa)}</div>
 								</div>
 							</div>
 						</CardContent>
