@@ -295,7 +295,7 @@ function DashboardCourses() {
 							Add Course
 						</Button>
 					</DialogTrigger>
-					<DialogContent className='sm:max-w-[475px]'>
+					<DialogContent className='sm:max-w-[475px] overflow-y-scroll max-h-screen'>
 						<DialogHeader>
 							<DialogTitle>Add New Course</DialogTitle>
 							<DialogDescription>
@@ -399,7 +399,7 @@ function DashboardCourses() {
 							open={scheduleDialogOpen}
 							onOpenChange={setScheduleDialogOpen}
 						>
-							<DialogContent className='sm:max-w-[480px]'>
+							<DialogContent className='sm:max-w-[480px] overflow-y-scroll max-h-screen'>
 								<DialogHeader>
 									<DialogTitle>Set Course Schedule</DialogTitle>
 									<DialogDescription>
