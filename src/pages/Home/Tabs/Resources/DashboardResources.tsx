@@ -166,7 +166,15 @@ function DashboardResources() {
 	};
 
 	return (
-		<div className='space-y-6'>
+		<div className='space-y-6 px-4 md:px-8 lg:px-12 xl:px-20 max-w-9xl mx-auto'>
+			<div>
+				<h2 className='text-3xl font-bold tracking-tight'>Resources</h2>
+
+				<p className='text-muted-foreground'>
+					Quick access to important UGA resources
+				</p>
+			</div>
+
 			<div className='w-full overflow-hidden'>
 				<div className='mx-auto max-w-fit flex flex-wrap justify-center gap-1 sm:justify-start sm:mx-0 sm:gap-2'>
 					{CATEGORIES.map((cat) => (
