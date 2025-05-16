@@ -134,10 +134,25 @@ export class FirestoreHelper {
 	}
 
 	async saveCourse(course: Course): Promise<void> {
+		// Save course document
 		await setDoc(doc(this.db, 'courses', course.id), {
 			...course,
 			userId: this.userId,
 		});
+
+		// Add this course.id to the semester's courseIds (if not present)
+		const semesterRef = doc(this.db, 'semesters', course.semesterId);
+		const semesterSnap = await getDoc(semesterRef);
+		if (semesterSnap.exists()) {
+			const data = semesterSnap.data();
+			let courseIds: string[] = Array.isArray(data.courseIds)
+				? [...data.courseIds]
+				: [];
+			if (!courseIds.includes(course.id)) {
+				courseIds.push(course.id);
+				await updateDoc(semesterRef, { courseIds });
+			}
+		}
 	}
 
 	async updateCourse(id: SnowflakeId, updates: Partial<Course>): Promise<void> {
@@ -145,6 +160,25 @@ export class FirestoreHelper {
 	}
 
 	async deleteCourse(id: SnowflakeId): Promise<void> {
+		// Find course to get semesterId
+		const courseSnap = await getDoc(doc(this.db, 'courses', id));
+		if (courseSnap.exists()) {
+			const data = courseSnap.data();
+			const semesterId = data.semesterId;
+			const semesterRef = doc(this.db, 'semesters', semesterId);
+			const semesterSnap = await getDoc(semesterRef);
+			if (semesterSnap.exists()) {
+				const courseIds: string[] = Array.isArray(semesterSnap.data().courseIds)
+					? [...semesterSnap.data().courseIds]
+					: [];
+				const idx = courseIds.indexOf(id);
+				if (idx !== -1) {
+					courseIds.splice(idx, 1);
+					await updateDoc(semesterRef, { courseIds });
+				}
+			}
+		}
+		// Delete course document
 		await deleteDoc(doc(this.db, 'courses', id));
 	}
 
@@ -227,6 +261,20 @@ export class FirestoreHelper {
 			...assignment,
 			userId: this.userId,
 		});
+
+		// Add to course.assignmentIds
+		const courseRef = doc(this.db, 'courses', assignment.courseId);
+		const courseSnap = await getDoc(courseRef);
+		if (courseSnap.exists()) {
+			const data = courseSnap.data();
+			let assignmentIds: string[] = Array.isArray(data.assignmentIds)
+				? [...data.assignmentIds]
+				: [];
+			if (!assignmentIds.includes(assignment.id)) {
+				assignmentIds.push(assignment.id);
+				await updateDoc(courseRef, { assignmentIds });
+			}
+		}
 	}
 
 	async updateAssignment(
@@ -237,6 +285,27 @@ export class FirestoreHelper {
 	}
 
 	async deleteAssignment(id: SnowflakeId): Promise<void> {
+		// Find assignment to get courseId
+		const assignmentSnap = await getDoc(doc(this.db, 'assignments', id));
+		if (assignmentSnap.exists()) {
+			const data = assignmentSnap.data();
+			const courseId = data.courseId;
+			const courseRef = doc(this.db, 'courses', courseId);
+			const courseSnap = await getDoc(courseRef);
+			if (courseSnap.exists()) {
+				const assignmentIds: string[] = Array.isArray(
+					courseSnap.data().assignmentIds
+				)
+					? [...courseSnap.data().assignmentIds]
+					: [];
+				const idx = assignmentIds.indexOf(id);
+				if (idx !== -1) {
+					assignmentIds.splice(idx, 1);
+					await updateDoc(courseRef, { assignmentIds });
+				}
+			}
+		}
+		// Delete assignment document
 		await deleteDoc(doc(this.db, 'assignments', id));
 	}
 }

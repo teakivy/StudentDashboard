@@ -26,8 +26,8 @@ export interface Course {
 	syllabusLink: string;
 	gradeSpreadsheetId?: string;
 	grade: number;
-	status: 'current' | 'completed' | 'upcoming';
 	assignmentIds: SnowflakeId[];
+	online: boolean;
 }
 
 export interface CourseSchedule {
@@ -41,8 +41,8 @@ export interface CourseSchedule {
 }
 
 export interface CourseScheduleItem {
-	startTime: Date;
-	endTime: Date;
+	startTime: string;
+	endTime: string;
 	location: string;
 }
 

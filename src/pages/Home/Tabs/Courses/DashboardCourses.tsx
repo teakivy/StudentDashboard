@@ -18,8 +18,21 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
-import { Plus, CalendarClock, X, Edit } from 'lucide-react';
-import { useState } from 'react';
+import {
+	Plus,
+	CalendarClock,
+	X,
+	Edit,
+	Calendar,
+	BadgeInfo,
+	FileText,
+	ExternalLink,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import type { Course, Semester, SnowflakeId } from '@/lib/types';
+import { getDB, getUserId } from '@/lib/managers/firestoreManager';
+import { toast } from 'sonner';
+import { createId } from '@/lib/snowflake';
 
 type Day =
 	| 'monday'
@@ -63,7 +76,11 @@ const DAY_NAMES: Record<Day, string> = {
 	sunday: 'Sun',
 };
 
-function getGroupedScheduleSummary(schedule: CourseSchedule): string {
+function getGroupedScheduleSummary(
+	schedule: CourseSchedule,
+	online: boolean
+): string {
+	if (online) return 'Online';
 	// Helper: convert day to single-char
 	const dayAbbr: Record<Day, string> = {
 		monday: 'M',
@@ -127,18 +144,53 @@ function compactTime(time: string) {
 	return t.replace('AM', 'AM').replace('PM', 'PM');
 }
 function DashboardCourses() {
+	const [courses, setCourses] = useState<Course[]>([]);
+	const [selectedSemester, setSelectedSemester] = useState<string>('');
+
 	const [newCourseOpen, setNewCourseOpen] = useState(false);
 	const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
 
 	// Main course state
 	const [semester, setSemester] = useState('');
+	const [semesters, setSemesters] = useState<Semester[]>([]);
 	const [name, setName] = useState('');
 	const [code, setCode] = useState('');
 	const [credits, setCredits] = useState('');
+	const [online, setOnline] = useState(false);
 	const [instructor, setInstructor] = useState('');
 	const [courseLink, setCourseLink] = useState('');
 	const [syllabusLink, setSyllabusLink] = useState('');
 	const [gradeSpreadsheetId, setGradeSpreadsheetId] = useState('');
+
+	useEffect(() => {
+		let fetchSemesters = async () => {
+			let fetchedSemesters = await getDB().getAllSemesters();
+
+			// sort by start date descending
+			fetchedSemesters.sort((a, b) => {
+				if (a.startDate < b.startDate) return 1;
+				if (a.startDate > b.startDate) return -1;
+				return 0;
+			});
+			setSemesters(fetchedSemesters);
+
+			// get courses for all semesters
+			let fetchedCourses = await getDB().getAllCourses();
+			// sort by course code
+			fetchedCourses.sort((a, b) => {
+				if (a.code < b.code) return -1;
+				if (a.code > b.code) return 1;
+				return 0;
+			});
+			setCourses(fetchedCourses);
+
+			if (fetchedSemesters.length && !selectedSemester) {
+				setSelectedSemester(fetchedSemesters[0].id);
+			}
+		};
+
+		fetchSemesters();
+	}, []);
 
 	const emptySchedule: CourseSchedule = {
 		monday: null,
@@ -273,6 +325,81 @@ function DashboardCourses() {
 		setLocation('');
 	};
 
+	const saveNewCourse = async () => {
+		let requiredOptions = [
+			{
+				name: 'Semester',
+				value: semester,
+			},
+			{
+				name: 'Course Name',
+				value: name,
+			},
+			{
+				name: 'Course Code',
+				value: code,
+			},
+			{
+				name: 'Credits',
+				value: credits,
+			},
+			{
+				name: 'Instructor',
+				value: instructor,
+			},
+			{
+				name: 'Course Link',
+				value: courseLink,
+			},
+			{
+				name: 'Syllabus Link',
+				value: syllabusLink,
+			},
+		];
+
+		// Check if all required options are filled
+		for (let option of requiredOptions) {
+			if (!option.value) {
+				toast(`Missing required field: ${option.name}`);
+				return;
+			}
+		}
+
+		// Check if course schedule is set (if not online)
+		if (
+			!online &&
+			Object.values(courseSchedule).every((item) => item === null)
+		) {
+			toast('Please set a course schedule.');
+			return;
+		}
+
+		// Create new course object
+		const newCourse: Course = {
+			id: createId(),
+			userId: getUserId(),
+			semesterId: semester as SnowflakeId,
+			name,
+			code,
+			credits: parseInt(credits, 10),
+			instructor,
+			schedule: courseSchedule,
+			resources: [],
+			online,
+			courseLink,
+			syllabusLink,
+			gradeSpreadsheetId: gradeSpreadsheetId || undefined,
+			grade: 0,
+			assignmentIds: [],
+		};
+
+		// Save to database
+		await getDB().saveCourse(newCourse);
+		toast.success('Course added successfully!');
+		setNewCourseOpen(false);
+		resetForm();
+	};
+
 	return (
 		<div className='space-y-6 px-4 md:px-8 lg:px-12 xl:px-20 max-w-9xl mx-auto'>
 			<div className='flex items-center justify-between'>
@@ -305,11 +432,18 @@ function DashboardCourses() {
 						<div className='grid gap-4 py-4'>
 							<div className='grid gap-2'>
 								<Label>Semester</Label>
-								<Input
-									value={semester}
-									onChange={(e) => setSemester(e.target.value)}
-									placeholder='e.g. Fall 2025'
-								/>
+								<Select value={semester} onValueChange={setSemester}>
+									<SelectTrigger className='w-full'>
+										<SelectValue placeholder='Select semester' />
+									</SelectTrigger>
+									<SelectContent>
+										{semesters.map((s) => (
+											<SelectItem key={s.id} value={s.id}>
+												{s.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
 							</div>
 							<div className='grid gap-2'>
 								<Label>Course Name</Label>
@@ -350,22 +484,39 @@ function DashboardCourses() {
 									placeholder='e.g. Dr. Smith'
 								/>
 							</div>
+
 							<div className='grid gap-2'>
-								<Label>Schedule</Label>
+								<Label>Online</Label>
 								<div className='flex items-center gap-2'>
-									<Button
-										variant='outline'
-										size='sm'
-										onClick={() => setScheduleDialogOpen(true)}
-									>
-										<CalendarClock className='mr-2 h-4 w-4' />
-										Set Schedule
-									</Button>
-									<span className='text-xs text-muted-foreground line-clamp-2 max-w-[240px]'>
-										{getGroupedScheduleSummary(courseSchedule)}
-									</span>
+									<Checkbox
+										id='online'
+										checked={online}
+										onCheckedChange={(checked) => setOnline(Boolean(checked))}
+									/>
+									<Label htmlFor='online' className='cursor-pointer'>
+										This course is online
+									</Label>
 								</div>
 							</div>
+
+							{!online && (
+								<div className='grid gap-2'>
+									<Label>Schedule</Label>
+									<div className='flex items-center gap-2'>
+										<Button
+											variant='outline'
+											size='sm'
+											onClick={() => setScheduleDialogOpen(true)}
+										>
+											<CalendarClock className='mr-2 h-4 w-4' />
+											Set Schedule
+										</Button>
+										<span className='text-xs text-muted-foreground line-clamp-2 max-w-[240px]'>
+											{getGroupedScheduleSummary(courseSchedule, online)}
+										</span>
+									</div>
+								</div>
+							)}
 							<div className='grid gap-2'>
 								<Label>Course Link</Label>
 								<Input
@@ -392,7 +543,9 @@ function DashboardCourses() {
 							</div>
 						</div>
 						<DialogFooter>
-							<Button type='submit'>Save</Button>
+							<Button type='submit' onClick={saveNewCourse}>
+								Save
+							</Button>
 						</DialogFooter>
 						{/* SCHEDULE DIALOG */}
 						<Dialog
@@ -714,8 +867,168 @@ function DashboardCourses() {
 					</DialogContent>
 				</Dialog>
 			</div>
+
+			<div className='mt-10'>
+				<CoursesView
+					semesters={semesters}
+					courses={courses}
+					selectedSemester={selectedSemester}
+					setSelectedSemester={setSelectedSemester}
+				/>
+			</div>
 		</div>
 	);
 }
 
 export default DashboardCourses;
+
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+	CardDescription,
+	CardFooter,
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+
+function GradeCircle({ grade }: { grade: number }) {
+	const pct = Math.max(0, Math.min(grade, 100));
+	const radius = 22;
+	const stroke = 4;
+	const circ = 2 * Math.PI * radius;
+	const progress = ((100 - pct) / 100) * circ;
+
+	let color = '#22c55e'; // Default: A (green)
+
+	if (pct < 59.5) color = '#ef4444'; // F: red
+	else if (pct < 69.5) color = '#fbbf24'; // D: amber
+	else if (pct < 79.5) color = '#eab308'; // C: yellow
+	else if (pct < 89.5) color = '#38bdf8'; // B: blue
+	else color = '#22c55e'; // A: green
+
+	return (
+		<div className='relative w-14 h-14'>
+			<svg width={56} height={56} className='rotate-[-90deg]'>
+				<circle
+					cx={28}
+					cy={28}
+					r={radius}
+					fill='none'
+					stroke={color}
+					strokeWidth={stroke}
+					strokeDasharray={circ}
+					strokeDashoffset={progress}
+					strokeLinecap='round'
+					style={{ transition: 'stroke-dashoffset 0.6s' }}
+				/>
+			</svg>
+			<div className='absolute inset-0 flex flex-col items-center justify-center'>
+				<span className='font-bold text-lg'>{Math.round(pct)}</span>
+			</div>
+		</div>
+	);
+}
+
+function CoursesView({
+	semesters,
+	courses,
+	selectedSemester,
+	setSelectedSemester,
+}: {
+	semesters: Semester[];
+	courses: Course[];
+	selectedSemester: string;
+	setSelectedSemester: (id: string) => void;
+}) {
+	const filteredCourses = selectedSemester
+		? courses.filter((c) => c.semesterId === selectedSemester)
+		: courses;
+
+	return (
+		<>
+			<div className='flex items-center gap-4 justify-between flex-wrap'>
+				<div className='flex items-center gap-2'>
+					<Select value={selectedSemester} onValueChange={setSelectedSemester}>
+						<SelectTrigger className='w-48'>
+							<SelectValue placeholder='Select semester' />
+						</SelectTrigger>
+						<SelectContent>
+							{semesters.map((s) => (
+								<SelectItem key={s.id} value={s.id}>
+									{s.name}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
+			</div>
+			{filteredCourses.length === 0 ? (
+				<div className='text-muted-foreground text-center mt-8'>
+					No courses found for this semester.
+				</div>
+			) : (
+				<div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-4'>
+					{filteredCourses.map((course) => (
+						<Card className=' h-full shadow-md hover:shadow-lg transition-shadow'>
+							<CardHeader className='relative'>
+								{/* GRADE CIRCLE: this is a sibling to the card info, NOT inside any flex */}
+								<div
+									className='absolute right-4 z-10'
+									style={{
+										top: '-10px',
+									}}
+								>
+									<GradeCircle grade={course.grade} />
+								</div>
+								<div>
+									<div className='flex items-center mb-2'>
+										<Badge variant='outline'>{course.code}</Badge>
+									</div>
+									<CardTitle className='text-lg font-semibold'>
+										{course.name}
+									</CardTitle>
+									<CardDescription className='mt-1.5'>
+										{course.instructor}
+									</CardDescription>
+								</div>
+							</CardHeader>
+							<CardContent className='flex flex-col gap-2'>
+								<div className='text-sm text-muted-foreground'>
+									<Calendar className='mr-2 h-4 w-4 inline mb-1' />
+									{getGroupedScheduleSummary(course.schedule, course.online)}
+								</div>
+								<div className='text-sm text-muted-foreground'>
+									<BadgeInfo className='mr-2 h-4 w-4 inline mb-1' />
+									{course.credits} Credits
+								</div>
+							</CardContent>
+							<CardFooter className='flex justify-between items-center'>
+								<Button
+									variant='outline'
+									size='sm'
+									onClick={() => {
+										window.open(course.syllabusLink, '_blank');
+									}}
+								>
+									<FileText className='mr-2 h-4 w-4' />
+									Syllabus
+								</Button>
+								<Button
+									variant='outline'
+									size='sm'
+									onClick={() => {
+										window.open(course.courseLink, '_blank');
+									}}
+								>
+									<ExternalLink className='mr-2 h-4 w-4' />
+									eLC
+								</Button>
+							</CardFooter>
+						</Card>
+					))}
+				</div>
+			)}
+		</>
+	);
+}

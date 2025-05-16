@@ -20,8 +20,8 @@ export class CourseScheduleBuilder {
 			| 'friday'
 			| 'saturday'
 			| 'sunday',
-		startTime: Date,
-		endTime: Date,
+		startTime: string,
+		endTime: string,
 		location: string
 	): CourseScheduleBuilder {
 		this.schedule[day] = {
