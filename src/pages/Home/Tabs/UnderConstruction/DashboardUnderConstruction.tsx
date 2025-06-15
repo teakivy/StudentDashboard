@@ -1,5 +1,3 @@
-import { Button } from '@/components/ui/button';
-import { migrateCourseSchedules } from '@/lib/managers/firestoreManager';
 import { HardHat } from 'lucide-react';
 
 export default function UnderConstruction() {
@@ -12,15 +10,6 @@ export default function UnderConstruction() {
 			<p className='text-muted-foreground'>
 				We're working hard to finish it. Check back soon!
 			</p>
-
-			{/* DELETE */}
-			<Button
-				onClick={() => {
-					migrateCourseSchedules();
-				}}
-			>
-				Migrate
-			</Button>
 		</div>
 	);
 }

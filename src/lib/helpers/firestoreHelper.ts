@@ -308,8 +308,4 @@ export class FirestoreHelper {
 		// Delete assignment document
 		await deleteDoc(doc(this.db, 'assignments', id));
 	}
-
-	async getDB(): Promise<Firestore> {
-		return this.db;
-	}
 }
