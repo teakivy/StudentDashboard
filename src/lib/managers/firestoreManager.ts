@@ -1,4 +1,10 @@
-import { getFirestore } from 'firebase/firestore';
+import {
+	collection,
+	doc,
+	getDocs,
+	getFirestore,
+	writeBatch,
+} from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { FirestoreHelper } from '../helpers/firestoreHelper';
 
@@ -28,4 +34,52 @@ export function getUserId(): string {
 	}
 
 	return user.uid;
+}
+
+// DELETE
+export async function migrateCourseSchedules() {
+	let db = await getDB().getDB();
+	const courseRef = collection(db, 'courses');
+	const snapshot = await getDocs(courseRef);
+
+	const batch = writeBatch(db);
+
+	snapshot.forEach((docSnap) => {
+		const data = docSnap.data();
+		const schedule = data.schedule;
+
+		if (!schedule) return;
+
+		let modified = false;
+		const newSchedule: any = {};
+
+		for (const day of [
+			'monday',
+			'tuesday',
+			'wednesday',
+			'thursday',
+			'friday',
+			'saturday',
+			'sunday',
+		]) {
+			const value = schedule[day];
+
+			if (value === null || value === undefined) {
+				newSchedule[day] = [];
+			} else if (Array.isArray(value)) {
+				newSchedule[day] = value; // already correct
+			} else {
+				newSchedule[day] = [value]; // wrap in array
+				modified = true;
+			}
+		}
+
+		if (modified) {
+			const docRef = doc(db, 'courses', docSnap.id);
+			batch.update(docRef, { schedule: newSchedule });
+		}
+	});
+
+	await batch.commit();
+	console.log('✅ Firestore migration complete');
 }

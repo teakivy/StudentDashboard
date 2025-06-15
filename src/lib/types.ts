@@ -31,13 +31,13 @@ export interface Course {
 }
 
 export interface CourseSchedule {
-	monday: CourseScheduleItem | null;
-	tuesday: CourseScheduleItem | null;
-	wednesday: CourseScheduleItem | null;
-	thursday: CourseScheduleItem | null;
-	friday: CourseScheduleItem | null;
-	saturday: CourseScheduleItem | null;
-	sunday: CourseScheduleItem | null;
+	monday: CourseScheduleItem[] | null;
+	tuesday: CourseScheduleItem[] | null;
+	wednesday: CourseScheduleItem[] | null;
+	thursday: CourseScheduleItem[] | null;
+	friday: CourseScheduleItem[] | null;
+	saturday: CourseScheduleItem[] | null;
+	sunday: CourseScheduleItem[] | null;
 }
 
 export interface CourseScheduleItem {

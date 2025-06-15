@@ -147,12 +147,14 @@ export default function DashboardSchedule() {
 			if (!courseDayDate) return;
 			if (courseDayDate < sem.startDate || courseDayDate > sem.endDate) return;
 			semesterCourses.forEach((course) => {
-				const item = course.schedule[day];
-				if (item) {
-					let start = timeStringToDecimal(item.startTime);
-					let end = timeStringToDecimal(item.endTime);
-					if (end > start) {
-						dayBlocks[day].push({ course, item, semester: sem, start, end });
+				const items = course.schedule[day];
+				if (Array.isArray(items)) {
+					for (const item of items) {
+						const start = timeStringToDecimal(item.startTime);
+						const end = timeStringToDecimal(item.endTime);
+						if (end > start) {
+							dayBlocks[day].push({ course, item, semester: sem, start, end });
+						}
 					}
 				}
 			});
