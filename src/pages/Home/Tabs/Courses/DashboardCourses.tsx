@@ -166,7 +166,6 @@ function DashboardCourses() {
 		let fetchSemesters = async () => {
 			let fetchedSemesters = await getDB().getAllSemesters();
 
-			// sort by start date descending
 			fetchedSemesters.sort((a, b) => {
 				if (a.startDate < b.startDate) return 1;
 				if (a.startDate > b.startDate) return -1;
@@ -174,9 +173,7 @@ function DashboardCourses() {
 			});
 			setSemesters(fetchedSemesters);
 
-			// get courses for all semesters
 			let fetchedCourses = await getDB().getAllCourses();
-			// sort by course code
 			fetchedCourses.sort((a, b) => {
 				if (a.code < b.code) return -1;
 				if (a.code > b.code) return 1;
@@ -184,13 +181,34 @@ function DashboardCourses() {
 			});
 			setCourses(fetchedCourses);
 
-			if (fetchedSemesters.length && !selectedSemester) {
+			const urlSemester = getQueryParam('semester');
+			if (urlSemester && fetchedSemesters.some((s) => s.id === urlSemester)) {
+				setSelectedSemester(urlSemester);
+			} else if (fetchedSemesters.length && !selectedSemester) {
 				setSelectedSemester(fetchedSemesters[0].id);
+				setQueryParam('semester', fetchedSemesters[0].id);
 			}
 		};
 
 		fetchSemesters();
 	}, []);
+
+	useEffect(() => {
+		if (selectedSemester) {
+			setQueryParam('semester', selectedSemester);
+		}
+	}, [selectedSemester]);
+
+	useEffect(() => {
+		const onPopState = () => {
+			const urlSemester = getQueryParam('semester');
+			if (urlSemester && semesters.some((s) => s.id === urlSemester)) {
+				setSelectedSemester(urlSemester);
+			}
+		};
+		window.addEventListener('popstate', onPopState);
+		return () => window.removeEventListener('popstate', onPopState);
+	}, [semesters]);
 
 	const emptySchedule: CourseSchedule = {
 		monday: null,
@@ -399,6 +417,19 @@ function DashboardCourses() {
 		setNewCourseOpen(false);
 		resetForm();
 	};
+
+	function getQueryParam(name: string): string | null {
+		const params = new URLSearchParams(window.location.search);
+		return params.get(name);
+	}
+
+	function setQueryParam(name: string, value: string) {
+		const params = new URLSearchParams(window.location.search);
+		params.set(name, value);
+		const newUrl =
+			window.location.pathname + '?' + params.toString() + window.location.hash;
+		window.history.replaceState({}, '', newUrl);
+	}
 
 	return (
 		<div className='space-y-6 px-4 md:px-8 lg:px-12 xl:px-20 max-w-9xl mx-auto'>

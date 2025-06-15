@@ -8,6 +8,7 @@ import DashboardSemesters from './Home/Tabs/Semesters/DashboardSemesters';
 import DashboardResources from './Home/Tabs/Resources/DashboardResources';
 import UnderConstruction from './Home/Tabs/UnderConstruction/DashboardUnderConstruction';
 import DashboardCourses from './Home/Tabs/Courses/DashboardCourses';
+import DashboardSchedule from './Home/Tabs/Schedule/DashboardSchedule';
 
 function Home() {
 	const [searchParams, setSearchParams] = useSearchParams();
@@ -33,7 +34,7 @@ function Home() {
 						{activeView === 'overview' && <DashboardOverview />}
 						{activeView === 'semesters' && <DashboardSemesters />}
 						{activeView === 'courses' && <DashboardCourses />}
-						{activeView === 'schedule' && <UnderConstruction />}
+						{activeView === 'schedule' && <DashboardSchedule />}
 						{activeView === 'assignments' && <UnderConstruction />}
 						{activeView === 'resources' && <DashboardResources />}
 					</main>
