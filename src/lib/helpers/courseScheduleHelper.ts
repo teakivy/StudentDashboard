@@ -11,43 +11,25 @@ type Weekday =
 
 export class CourseScheduleBuilder {
 	private schedule: CourseSchedule = {
-		monday: [],
-		tuesday: [],
-		wednesday: [],
-		thursday: [],
-		friday: [],
-		saturday: [],
-		sunday: [],
+		monday: null,
+		tuesday: null,
+		wednesday: null,
+		thursday: null,
+		friday: null,
+		saturday: null,
+		sunday: null,
 	};
 
-	addTimeBlock(
-		day: Weekday,
-		startTime: string,
-		endTime: string,
-		location: string
-	): CourseScheduleBuilder {
-		this.schedule[day].push({ startTime, endTime, location });
-		return this;
-	}
-
 	removeDay(day: Weekday): CourseScheduleBuilder {
-		this.schedule[day] = [];
+		this.schedule[day] = null;
 		return this;
 	}
 
-	removeBlock(
+	setDay(
 		day: Weekday,
-		startTime: string,
-		endTime: string
+		block: CourseScheduleItem | null
 	): CourseScheduleBuilder {
-		this.schedule[day] = this.schedule[day].filter(
-			(block) => block.startTime !== startTime || block.endTime !== endTime
-		);
-		return this;
-	}
-
-	setDay(day: Weekday, blocks: CourseScheduleItem[]): CourseScheduleBuilder {
-		this.schedule[day] = blocks;
+		this.schedule[day] = block ? block : null;
 		return this;
 	}
 
