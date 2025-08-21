@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { MapPin, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import { getDB } from '@/lib/managers/firestoreManager';
 import type { Semester, Course, CourseScheduleItem } from '@/lib/types';
 
@@ -255,7 +255,7 @@ export default function DashboardSchedule() {
 						<div>Time</div>
 					</div>
 					<div className='grid grid-cols-5 gap-0 border-r w-full'>
-						{DAY_LABELS.map((day, i) => (
+						{DAY_LABELS.map((day, _) => (
 							<div
 								key={day}
 								className='text-sm font-bold flex items-center justify-center select-none border-l'
@@ -280,7 +280,7 @@ export default function DashboardSchedule() {
 						))}
 					</div>
 					{/* Calendar grid */}
-					{WEEKDAYS.map((day, dayIdx) => {
+					{WEEKDAYS.map((day, _) => {
 						const blocks = dayBlocks[day];
 						const positions = getBlockPositions(blocks);
 						return (
