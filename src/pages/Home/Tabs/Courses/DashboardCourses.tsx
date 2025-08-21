@@ -29,7 +29,13 @@ import {
 	ExternalLink,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import type { Course, Semester, SnowflakeId } from '@/lib/types';
+import type {
+	Course,
+	Semester,
+	SnowflakeId,
+	CourseSchedule,
+	CourseScheduleItem,
+} from '@/lib/types';
 import { getDB, getUserId } from '@/lib/managers/firestoreManager';
 import { toast } from 'sonner';
 import { createId } from '@/lib/snowflake';
@@ -42,13 +48,6 @@ type Day =
 	| 'friday'
 	| 'saturday'
 	| 'sunday';
-
-interface CourseScheduleItem {
-	startTime: string; // '10:30 AM'
-	endTime: string;
-	location: string;
-}
-type CourseSchedule = Record<Day, CourseScheduleItem | null>;
 
 const HOURS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 const MINUTES = [
