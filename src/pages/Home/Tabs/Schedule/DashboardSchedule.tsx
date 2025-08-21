@@ -10,6 +10,8 @@ const WEEKDAYS = [
 	'thursday',
 	'friday',
 ] as const;
+type Weekday = (typeof WEEKDAYS)[number];
+
 const DAY_LABELS = [
 	'Monday',
 	'Tuesday',
@@ -88,10 +90,18 @@ function getMonday(date: Date) {
 	return d;
 }
 function addDays(date: Date, days: number) {
-	let d = new Date(date);
+	const d = new Date(date);
 	d.setDate(d.getDate() + days);
 	return d;
 }
+
+type DayBlock = {
+	course: Course;
+	item: CourseScheduleItem;
+	semester: Semester;
+	start: number;
+	end: number;
+};
 
 export default function DashboardSchedule() {
 	const [semesters, setSemesters] = useState<Semester[]>([]);
@@ -114,48 +124,46 @@ export default function DashboardSchedule() {
 	const today = new Date();
 	let monday = getMonday(today);
 	monday = addDays(monday, 7 * weekOffset);
-	let weekDates: Date[] = [];
-	for (let i = 0; i < 5; i++) weekDates.push(addDays(monday, i));
-	let weekStart = weekDates[0];
-	let weekEnd = weekDates[weekDates.length - 1];
+	const weekDates: Date[] = Array.from({ length: 5 }, (_, i) =>
+		addDays(monday, i)
+	);
+	const weekStart = weekDates[0];
+	const weekEnd = weekDates[weekDates.length - 1];
 
 	// Find all semesters active during this week
-	const activeSemesters = semesters.filter((sem) => {
-		if (sem.endDate < weekStart) return false;
-		if (sem.startDate > weekEnd) return false;
-		return true;
-	});
+	const activeSemesters = semesters.filter(
+		(sem) => !(sem.endDate < weekStart || sem.startDate > weekEnd)
+	);
 
 	// For each day, gather valid course blocks (with absolute start/end)
-	const dayBlocks: Record<
-		string,
-		{
-			course: Course;
-			item: CourseScheduleItem;
-			semester: Semester;
-			start: number;
-			end: number;
-		}[]
-	> = {};
-	WEEKDAYS.forEach((day) => {
-		dayBlocks[day] = [];
-	});
+	const dayBlocks: Record<Weekday, DayBlock[]> = {
+		monday: [],
+		tuesday: [],
+		wednesday: [],
+		thursday: [],
+		friday: [],
+	};
+
 	for (const sem of activeSemesters) {
 		const semesterCourses = courses.filter((c) => c.semesterId === sem.id);
+
 		WEEKDAYS.forEach((day, idx) => {
 			const courseDayDate = weekDates[idx];
 			if (!courseDayDate) return;
 			if (courseDayDate < sem.startDate || courseDayDate > sem.endDate) return;
+
 			semesterCourses.forEach((course) => {
-				const items = course.schedule[day];
-				if (Array.isArray(items)) {
-					for (const item of items) {
-						const start = timeStringToDecimal(item.startTime);
-						const end = timeStringToDecimal(item.endTime);
-						if (end > start) {
-							dayBlocks[day].push({ course, item, semester: sem, start, end });
-						}
-					}
+				// EXPECT A SINGLE ITEM (or undefined/null) PER DAY:
+				const item = (course.schedule as any)[day] as
+					| CourseScheduleItem
+					| null
+					| undefined;
+				if (!item) return;
+
+				const start = timeStringToDecimal(item.startTime);
+				const end = timeStringToDecimal(item.endTime);
+				if (end > start) {
+					dayBlocks[day].push({ course, item, semester: sem, start, end });
 				}
 			});
 		});
@@ -183,13 +191,14 @@ export default function DashboardSchedule() {
 		}
 	}, [firstHour, weekOffset, semesters.length, courses.length]);
 
-	// Overlap logic: group blocks that overlap (for side-by-side display)
-	function getBlockPositions(blocks: (typeof dayBlocks)[string]) {
-		// Sort by start time
-		blocks = blocks.slice().sort((a, b) => a.start - b.start || a.end - b.end);
+	// Overlap logic: still works (0–1 block per day results in totalLanes = 1)
+	function getBlockPositions(blocks: DayBlock[]) {
+		const sorted = blocks
+			.slice()
+			.sort((a, b) => a.start - b.start || a.end - b.end);
 		const lanes: { end: number }[] = [];
 		const positions: { lane: number; totalLanes: number }[] = [];
-		blocks.forEach((blk, idx) => {
+		sorted.forEach((blk, idx) => {
 			let placed = false;
 			for (let i = 0; i < lanes.length; ++i) {
 				if (blk.start >= lanes[i].end - 0.01) {
@@ -205,14 +214,17 @@ export default function DashboardSchedule() {
 			}
 		});
 		positions.forEach((pos) => (pos.totalLanes = lanes.length));
-		return positions;
+		// Map positions back to original order of `blocks`
+		return blocks.map((blk) => {
+			const idx = sorted.indexOf(blk);
+			return positions[idx];
+		});
 	}
 
 	return (
 		<div className='w-full max-w-6xl mx-auto px-4 py-8'>
 			<div className='flex items-center justify-between mb-1'>
 				<h1 className='text-3xl font-bold'>Class Schedule</h1>
-				{/* Week selector, fixed width for content stability */}
 				<div
 					className='flex items-center gap-2 text-base font-semibold bg-muted dark:bg-zinc-800 px-3 py-1 rounded-xl'
 					style={{ minWidth: 300, maxWidth: 340, justifyContent: 'center' }}
@@ -243,6 +255,7 @@ export default function DashboardSchedule() {
 					</button>
 				</div>
 			</div>
+
 			<div
 				className='overflow-x-auto rounded-xl shadow-lg border bg-card dark:bg-[#18181B] mt-5'
 				style={{ maxHeight: 1200, minHeight: 600 }}
@@ -255,7 +268,7 @@ export default function DashboardSchedule() {
 						<div>Time</div>
 					</div>
 					<div className='grid grid-cols-5 gap-0 border-r w-full'>
-						{DAY_LABELS.map((day, _) => (
+						{DAY_LABELS.map((day) => (
 							<div
 								key={day}
 								className='text-sm font-bold flex items-center justify-center select-none border-l'
@@ -265,7 +278,8 @@ export default function DashboardSchedule() {
 						))}
 					</div>
 				</div>
-				<div className='min-w-[900px] flex'>
+
+				<div className='min-w-[900px] flex' ref={gridRef}>
 					{/* Time column */}
 					<div className='flex flex-col border-r w-20 min-w-[64px] max-w-[72px] bg-black/5 dark:bg-white/5'>
 						{Array.from({ length: TIME_END - TIME_START }, (_, i) => (
@@ -279,8 +293,9 @@ export default function DashboardSchedule() {
 							</div>
 						))}
 					</div>
+
 					{/* Calendar grid */}
-					{WEEKDAYS.map((day, _) => {
+					{WEEKDAYS.map((day) => {
 						const blocks = dayBlocks[day];
 						const positions = getBlockPositions(blocks);
 						return (
@@ -305,6 +320,7 @@ export default function DashboardSchedule() {
 										}}
 									/>
 								))}
+
 								{/* Course blocks */}
 								{blocks.map((blk, i) => {
 									const { start, end, course, item, semester } = blk;
@@ -321,12 +337,11 @@ export default function DashboardSchedule() {
 									return (
 										<div
 											key={course.id + item.startTime + semester.id}
-											className={`absolute z-10  rounded-md px-3 py-2 border-2 shadow-lg border cursor-pointer flex flex-col transition-all backdrop-blur`}
+											className='absolute z-10  rounded-md px-3 py-2 border-2 shadow-lg border cursor-pointer flex flex-col transition-all backdrop-blur'
 											style={{
 												top,
 												left: `calc(${leftPercent}% + 6px)`,
 												width: `calc(${widthPercent}% - 12px)`,
-
 												height: blockHeight,
 												minHeight: 22,
 												maxWidth:
@@ -334,7 +349,6 @@ export default function DashboardSchedule() {
 														? `calc(${widthPercent}% - 6px)`
 														: undefined,
 												zIndex: 5 + lane,
-
 												borderColor: borderHex,
 												backgroundColor: rgbaBg,
 											}}
