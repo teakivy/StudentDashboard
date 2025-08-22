@@ -34,7 +34,6 @@ import type {
 } from '@/lib/types';
 
 import {
-	CalendarClock,
 	CheckCircle2,
 	Circle,
 	Minus,

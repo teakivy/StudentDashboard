@@ -38,6 +38,7 @@ function Home() {
 						{activeView === 'schedule' && <DashboardSchedule />}
 						{activeView === 'assignments' && <DashboardAssignments />}
 						{activeView === 'resources' && <DashboardResources />}
+						{activeView === 'under_construction' && <UnderConstruction />}
 					</main>
 				</div>
 			</div>

@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react';
 
 function DashboardOverview() {
 	const isMobile = useIsMobile();
-	const [semesters, setSemesters] = useState<Semester[]>([]);
+	const [_, setSemesters] = useState<Semester[]>([]);
 	const [courses, setCourses] = useState<Course[]>([]);
 	const [currentCourses, setCurrentCourses] = useState<Course[]>([]);
 	const [pastCourses, setPastCourses] = useState<Course[]>([]);
