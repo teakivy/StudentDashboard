@@ -93,6 +93,12 @@ const RESOURCE_DATA: Record<Category, ResourceCardProps[]> = {
 			link: 'https://uga.passiogo.com/',
 		},
 		{
+			title: 'Ikon Shuttle Tracker',
+			description: 'Real-time Ikon shuttle location',
+			icon: Bus,
+			link: 'https://cloud.samsara.com/o/67687/fleet/viewer/5GSXyCG0UUAWAq01r3Mf'
+		},
+		{
 			title: 'Dining Hall Menus',
 			description: 'View menus for UGA dining halls',
 			icon: Apple,
