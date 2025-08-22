@@ -28,6 +28,7 @@ export interface Course {
 	grade: number;
 	assignmentIds: SnowflakeId[];
 	online: boolean;
+	letterGrade: LetterGrade;
 }
 
 export interface CourseSchedule {
@@ -55,12 +56,13 @@ export interface Assignment {
 	id: SnowflakeId;
 	userId: string;
 	name: string;
+	description: string | null;
 	dueDate: Date;
 	courseId: SnowflakeId;
 	semesterId: SnowflakeId;
 	resources: ResourceLink[];
 	assignmentLink: string;
-	status: 'not_started' | 'in_progress' | 'completed' | 'overdue' | 'not_open';
+	status: 'not_started' | 'in_progress' | 'completed' | 'overdue';
 	category:
 		| 'homework'
 		| 'project'
@@ -68,5 +70,21 @@ export interface Assignment {
 		| 'quiz'
 		| 'lab'
 		| 'essay'
+		| 'reading'
 		| 'other';
 }
+
+export type LetterGrade =
+	| 'A'
+	| 'A-'
+	| 'B+'
+	| 'B'
+	| 'B-'
+	| 'C+'
+	| 'C'
+	| 'C-'
+	| 'D+'
+	| 'D'
+	| 'D-'
+	| 'F'
+	| 'N/A';

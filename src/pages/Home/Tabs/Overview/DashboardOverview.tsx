@@ -1,9 +1,49 @@
 import { Card } from '@/components/ui/card';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { calculateGPA } from '@/lib/helpers/gpaHelper';
+import {
+	getNextClassStrings,
+	type NextClassStrings,
+} from '@/lib/helpers/nextClassHelper';
+import { getDB } from '@/lib/managers/firestoreManager';
+import type { Semester, Course } from '@/lib/types';
 import { GraduationCap, FileText, Calendar, Clock } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 function DashboardOverview() {
 	const isMobile = useIsMobile();
+	const [semesters, setSemesters] = useState<Semester[]>([]);
+	const [courses, setCourses] = useState<Course[]>([]);
+	const [currentCourses, setCurrentCourses] = useState<Course[]>([]);
+	const [pastCourses, setPastCourses] = useState<Course[]>([]);
+	const [nextClass, setNextClass] = useState<NextClassStrings | null>(null);
+
+	useEffect(() => {
+		async function fetchData() {
+			const semesters = await getDB().getAllSemesters();
+			setSemesters(semesters);
+			let currentSemester = semesters.find(
+				(sem) => sem.startDate < new Date() && sem.endDate > new Date()
+			);
+			if (!currentSemester) return;
+			const currentCourses = await getDB().getCoursesBySemester(
+				currentSemester.id
+			);
+			setCurrentCourses(currentCourses);
+			// Fetch all courses for the dashboard stats
+			const allCourses = await getDB().getAllCourses();
+			setCourses(allCourses);
+
+			const nextClass = getNextClassStrings(currentCourses);
+			setNextClass(nextClass);
+
+			const pastCourses = allCourses.filter((course) => {
+				return course.semesterId !== currentSemester.id;
+			});
+			setPastCourses(pastCourses);
+		}
+		fetchData();
+	}, []);
 	return (
 		<div className='space-y-6 px-4 md:px-8 lg:px-12 xl:px-20 max-w-9xl mx-auto'>
 			<div>
@@ -21,32 +61,42 @@ function DashboardOverview() {
 			<div className='grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6 md:gap-10'>
 				<StatsCard
 					title='Current GPA'
-					value='3.60'
-					subtitle={`+.10 ${isMobile ? '' : 'from last semester'}`}
+					value={`${calculateGPA(courses).toFixed(2)}`}
+					subtitle={`${pastCourses.reduce(
+						(acc, course) => acc + course.credits,
+						0
+					)} credit hours`}
 					icon={
 						<GraduationCap className='h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground' />
 					}
 				/>
 				<StatsCard
 					title='Courses'
-					value='4'
-					subtitle='15 credit hours'
+					value={currentCourses.length.toString()}
+					subtitle={`${currentCourses.reduce(
+						(acc, course) => acc + course.credits,
+						0
+					)} credit hours`}
 					icon={
 						<FileText className='h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground' />
 					}
 				/>
 				<StatsCard
 					title='Assignments'
-					value='7'
-					subtitle={`3 ${isMobile ? 'this week' : 'due this week'}`}
+					value='-'
+					subtitle={`- ${isMobile ? 'this week' : 'due this week'}`}
 					icon={
 						<Calendar className='h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground' />
 					}
 				/>
 				<StatsCard
 					title='Next Class'
-					value='9:30 AM'
-					subtitle={`PSYC 1101 ${isMobile ? '' : '- Intro to Psychology'}`}
+					value={nextClass?.relative || 'No upcoming class'}
+					subtitle={
+						nextClass
+							? `${nextClass?.code} ${isMobile ? '' : `- ${nextClass?.name}`}`
+							: ''
+					}
 					icon={
 						<Clock className='h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground' />
 					}

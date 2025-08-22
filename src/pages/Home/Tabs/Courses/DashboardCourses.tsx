@@ -408,6 +408,7 @@ function DashboardCourses() {
 			gradeSpreadsheetId: gradeSpreadsheetId || undefined,
 			grade: 0,
 			assignmentIds: [],
+			letterGrade: 'N/A',
 		};
 
 		// Save to database
@@ -447,7 +448,7 @@ function DashboardCourses() {
 					}}
 				>
 					<DialogTrigger asChild>
-						<Button variant='secondary'>
+						<Button variant='secondary' className='cursor-pointer'>
 							<Plus className='mr-2 h-4 w-4' />
 							Add Course
 						</Button>
@@ -463,12 +464,16 @@ function DashboardCourses() {
 							<div className='grid gap-2'>
 								<Label>Semester</Label>
 								<Select value={semester} onValueChange={setSemester}>
-									<SelectTrigger className='w-full'>
+									<SelectTrigger className='w-full cursor-pointer'>
 										<SelectValue placeholder='Select semester' />
 									</SelectTrigger>
 									<SelectContent>
 										{semesters.map((s) => (
-											<SelectItem key={s.id} value={s.id}>
+											<SelectItem
+												key={s.id}
+												value={s.id}
+												className='cursor-pointer'
+											>
 												{s.name}
 											</SelectItem>
 										))}
@@ -494,12 +499,16 @@ function DashboardCourses() {
 							<div className='grid gap-2'>
 								<Label>Credits</Label>
 								<Select value={credits} onValueChange={setCredits}>
-									<SelectTrigger className='w-full'>
+									<SelectTrigger className='w-full cursor-pointer'>
 										<SelectValue placeholder='Select credits' />
 									</SelectTrigger>
-									<SelectContent>
+									<SelectContent className='cursor-pointer'>
 										{[1, 2, 3, 4, 5].map((n) => (
-											<SelectItem key={n} value={n.toString()}>
+											<SelectItem
+												key={n}
+												value={n.toString()}
+												className='cursor-pointer'
+											>
 												{n}
 											</SelectItem>
 										))}
@@ -537,6 +546,7 @@ function DashboardCourses() {
 											variant='outline'
 											size='sm'
 											onClick={() => setScheduleDialogOpen(true)}
+											className='cursor-pointer'
 										>
 											<CalendarClock className='mr-2 h-4 w-4' />
 											Set Schedule
@@ -568,7 +578,7 @@ function DashboardCourses() {
 								<Input
 									value={gradeSpreadsheetId}
 									onChange={(e) => setGradeSpreadsheetId(e.target.value)}
-									placeholder='(Optional)'
+									placeholder='12345'
 								/>
 							</div>
 						</div>
@@ -623,10 +633,10 @@ function DashboardCourses() {
 										<div className='flex gap-2 mb-2'>
 											<Label className='w-12'>Start</Label>
 											<Select value={startHour} onValueChange={setStartHour}>
-												<SelectTrigger className='w-19'>
+												<SelectTrigger className='w-19 cursor-pointer'>
 													<SelectValue placeholder='Hr' />
 												</SelectTrigger>
-												<SelectContent>
+												<SelectContent className='cursor-pointer'>
 													{HOURS.map((h) => (
 														<SelectItem key={h} value={h.toString()}>
 															{h}
@@ -638,10 +648,10 @@ function DashboardCourses() {
 												value={startMinute}
 												onValueChange={setStartMinute}
 											>
-												<SelectTrigger className='w-19'>
+												<SelectTrigger className='w-19 cursor-pointer'>
 													<SelectValue placeholder='Min' />
 												</SelectTrigger>
-												<SelectContent>
+												<SelectContent className='cursor-pointer'>
 													{MINUTES.map((m) => (
 														<SelectItem key={m} value={m}>
 															{m}
@@ -650,10 +660,10 @@ function DashboardCourses() {
 												</SelectContent>
 											</Select>
 											<Select value={startAMPM} onValueChange={setStartAMPM}>
-												<SelectTrigger className='w-19'>
+												<SelectTrigger className='w-19 cursor-pointer'>
 													<SelectValue placeholder='AM/PM' />
 												</SelectTrigger>
-												<SelectContent>
+												<SelectContent className='cursor-pointer'>
 													{AMPM.map((a) => (
 														<SelectItem key={a} value={a}>
 															{a}
@@ -665,10 +675,10 @@ function DashboardCourses() {
 										<div className='flex gap-2 mb-2'>
 											<Label className='w-12'>End</Label>
 											<Select value={endHour} onValueChange={setEndHour}>
-												<SelectTrigger className='w-19'>
+												<SelectTrigger className='w-19 cursor-pointer'>
 													<SelectValue placeholder='Hr' />
 												</SelectTrigger>
-												<SelectContent>
+												<SelectContent className='cursor-pointer'>
 													{HOURS.map((h) => (
 														<SelectItem key={h} value={h.toString()}>
 															{h}
@@ -677,10 +687,10 @@ function DashboardCourses() {
 												</SelectContent>
 											</Select>
 											<Select value={endMinute} onValueChange={setEndMinute}>
-												<SelectTrigger className='w-19'>
+												<SelectTrigger className='w-19 cursor-pointer'>
 													<SelectValue placeholder='Min' />
 												</SelectTrigger>
-												<SelectContent>
+												<SelectContent className='cursor-pointer'>
 													{MINUTES.map((m) => (
 														<SelectItem key={m} value={m}>
 															{m}
@@ -689,10 +699,10 @@ function DashboardCourses() {
 												</SelectContent>
 											</Select>
 											<Select value={endAMPM} onValueChange={setEndAMPM}>
-												<SelectTrigger className='w-19'>
+												<SelectTrigger className='w-19 cursor-pointer'>
 													<SelectValue placeholder='AM/PM' />
 												</SelectTrigger>
-												<SelectContent>
+												<SelectContent className='cursor-pointer'>
 													{AMPM.map((a) => (
 														<SelectItem key={a} value={a}>
 															{a}
@@ -778,10 +788,10 @@ function DashboardCourses() {
 															value={editingStartHour}
 															onValueChange={setEditingStartHour}
 														>
-															<SelectTrigger className='w-19'>
+															<SelectTrigger className='w-19 cursor-pointer'>
 																<SelectValue placeholder='Hr' />
 															</SelectTrigger>
-															<SelectContent>
+															<SelectContent className='cursor-pointer'>
 																{HOURS.map((h) => (
 																	<SelectItem key={h} value={h.toString()}>
 																		{h}
@@ -793,10 +803,10 @@ function DashboardCourses() {
 															value={editingStartMinute}
 															onValueChange={setEditingStartMinute}
 														>
-															<SelectTrigger className='w-19'>
+															<SelectTrigger className='w-19 cursor-pointer'>
 																<SelectValue placeholder='Min' />
 															</SelectTrigger>
-															<SelectContent>
+															<SelectContent className='cursor-pointer'>
 																{MINUTES.map((m) => (
 																	<SelectItem key={m} value={m}>
 																		{m}
@@ -808,10 +818,10 @@ function DashboardCourses() {
 															value={editingStartAMPM}
 															onValueChange={setEditingStartAMPM}
 														>
-															<SelectTrigger className='w-19'>
+															<SelectTrigger className='w-19 cursor-pointer'>
 																<SelectValue placeholder='AM/PM' />
 															</SelectTrigger>
-															<SelectContent>
+															<SelectContent className='cursor-pointer'>
 																{AMPM.map((a) => (
 																	<SelectItem key={a} value={a}>
 																		{a}
@@ -826,10 +836,10 @@ function DashboardCourses() {
 															value={editingEndHour}
 															onValueChange={setEditingEndHour}
 														>
-															<SelectTrigger className='w-19'>
+															<SelectTrigger className='w-19 cursor-pointer'>
 																<SelectValue placeholder='Hr' />
 															</SelectTrigger>
-															<SelectContent>
+															<SelectContent className='cursor-pointer'>
 																{HOURS.map((h) => (
 																	<SelectItem key={h} value={h.toString()}>
 																		{h}
@@ -841,10 +851,10 @@ function DashboardCourses() {
 															value={editingEndMinute}
 															onValueChange={setEditingEndMinute}
 														>
-															<SelectTrigger className='w-19'>
+															<SelectTrigger className='w-19 cursor-pointer'>
 																<SelectValue placeholder='Min' />
 															</SelectTrigger>
-															<SelectContent>
+															<SelectContent className='cursor-pointer'>
 																{MINUTES.map((m) => (
 																	<SelectItem key={m} value={m}>
 																		{m}
@@ -856,10 +866,10 @@ function DashboardCourses() {
 															value={editingEndAMPM}
 															onValueChange={setEditingEndAMPM}
 														>
-															<SelectTrigger className='w-19'>
+															<SelectTrigger className='w-19 cursor-pointer'>
 																<SelectValue placeholder='AM/PM' />
 															</SelectTrigger>
-															<SelectContent>
+															<SelectContent className='cursor-pointer'>
 																{AMPM.map((a) => (
 																	<SelectItem key={a} value={a}>
 																		{a}
@@ -980,10 +990,10 @@ function CoursesView({
 			<div className='flex items-center gap-4 justify-between flex-wrap'>
 				<div className='flex items-center gap-2'>
 					<Select value={selectedSemester} onValueChange={setSelectedSemester}>
-						<SelectTrigger className='w-48'>
+						<SelectTrigger className='w-48 cursor-pointer'>
 							<SelectValue placeholder='Select semester' />
 						</SelectTrigger>
-						<SelectContent>
+						<SelectContent className='cursor-pointer'>
 							{semesters.map((s) => (
 								<SelectItem key={s.id} value={s.id}>
 									{s.name}
@@ -1040,6 +1050,7 @@ function CoursesView({
 									onClick={() => {
 										window.open(course.syllabusLink, '_blank');
 									}}
+									className='cursor-pointer'
 								>
 									<FileText className='mr-2 h-4 w-4' />
 									Syllabus
@@ -1050,6 +1061,7 @@ function CoursesView({
 									onClick={() => {
 										window.open(course.courseLink, '_blank');
 									}}
+									className='cursor-pointer'
 								>
 									<ExternalLink className='mr-2 h-4 w-4' />
 									eLC
